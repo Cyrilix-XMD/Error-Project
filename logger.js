@@ -1,12 +1,12 @@
 const express = require("express");
 require("dotenv").config();
-const PORT = process.env.PORT || 3000;
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 
-const app = express();
 const PORT = process.env.PORT || 3000;
+
+const app = express();
 
 // Middleware to parse JSON
 app.use(bodyParser.json());
