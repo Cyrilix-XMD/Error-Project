@@ -1,7 +1,7 @@
 {
   "name": "logging-server",
   "version": "1.0.0",
-  "description": "A silent error logging server for collecting error reports.",
+  "description": "A silent error logging server with web-based log viewing.",
   "main": "logger.js",
   "scripts": {
     "start": "node logger.js"
@@ -14,7 +14,7 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "keywords": ["logging", "error-reporting", "server", "express"],
+  "keywords": ["logging", "error-reporting", "server", "express", "web-logs"],
   "author": "Your Name",
   "license": "MIT"
 }
