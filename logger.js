@@ -1,72 +1,51 @@
 const express = require("express");
-require("dotenv").config();
-const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-const app = express();
+let users = new Set();  // Use a Set to keep unique users
 
-// Middleware to parse JSON
-app.use(bodyParser.json());
+// Middleware to log errors
+app.use(express.json());
 
-// Endpoint to receive error logs
-app.post("/report", (req, res) => {
-    const { error, timestamp } = req.body;
-
-    // Log the error to a file
-    const logMessage = `[${timestamp}] - ${error}\n`;
-    fs.appendFile("error_logs.txt", logMessage, (err) => {
-        if (err) console.error("Failed to save log:", err);
-    });
-
-    res.status(200).send("Error logged successfully");
-});
-
-// Endpoint to view logs on the web
-app.get("/logs", (req, res) => {
-    fs.readFile("error_logs.txt", "utf8", (err, data) => {
-        if (err) {
-            return res.status(500).send("Error reading log file.");
-        }
-
-        // Render logs as HTML
-        const formattedLogs = data.replace(/\n/g, "<br>");
-        res.send(`
-            <html>
-            <head>
-                <title>Error Logs</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                    pre { background: #f4f4f4; padding: 10px; border-radius: 5px; }
-                </style>
-            </head>
-            <body>
-                <h1>Logged Errors</h1>
-                <pre>${formattedLogs || "No logs available"}</pre>
-            </body>
-            </html>
-        `);
-    });
-});
-
-// Home page
+// Serve the dashboard HTML
 app.get("/", (req, res) => {
-    res.send(`
-        <html>
-        <head>
-            <title>Logging Server</title>
-        </head>
-        <body>
-            <h1>Welcome to the Logging Server</h1>
-            <p>View error logs: <a href="/logs">Click here</a></p>
-        </body>
-        </html>
-    `);
+    res.sendFile(path.join(__dirname, "dashboard.html"));
+});
+
+// Endpoint to get total users
+app.get("/users", (req, res) => {
+    res.json({ total: users.size });
+});
+
+// Endpoint to log errors
+app.post("/report", (req, res) => {
+    const { error, timestamp, userId } = req.body;
+    users.add(userId);  // Track the user
+
+    const logEntry = `[${timestamp}] - ${error}\n`;
+    fs.appendFileSync("error.log", logEntry);
+
+    res.status(200).json({ message: "Error logged successfully" });
+});
+
+// Endpoint to get logged errors
+app.get("/logs", (req, res) => {
+    const logs = [];
+    const logData = fs.readFileSync("error.log", "utf8").split("\n");
+
+    logData.forEach((line) => {
+        if (line.trim()) {
+            const [timestamp, error] = line.split(" - ");
+            logs.push({ timestamp: timestamp.replace("[", "").replace("]", ""), error });
+        }
+    });
+
+    res.json({ logs });
 });
 
 app.listen(PORT, () => {
-    console.log(`Logging server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
