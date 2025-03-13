@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error Logging Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        h1, h2 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table, th, td { border: 1px solid #ddd; }
+        th, td { padding: 12px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Error Logging Dashboard</h1>
+    <h2>Total Users: <span id="total-users">0</span></h2>
+    <h2>Logged Errors</h2>
+    <table>
+        <tr>
+            <th>Timestamp</th>
+            <th>Error Message</th>
+            <th>User ID</th>
+        </tr>
+        <tbody id="log-entries"></tbody>
+    </table>
+</body>
+<script>
+    fetch('/logs')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("total-users").textContent = data.total;
+            const logEntries = document.getElementById("log-entries");
+            logEntries.innerHTML = "";
+            data.logs.forEach(log => {
+                const row = `<tr><td>${log.timestamp}</td><td>${log.error}</td><td>${log.userId || "N/A"}</td></tr>`;
+                logEntries.insertAdjacentHTML("beforeend", row);
+            });
+        });
+</script>
+</html>
